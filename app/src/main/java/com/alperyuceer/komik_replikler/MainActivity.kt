@@ -42,6 +42,7 @@ import android.widget.RelativeLayout
 import com.alperyuceer.komik_replikler.api.RetrofitInstance
 import android.provider.Settings
 import com.alperyuceer.komik_replikler.api.FavoriteRequest
+import androidx.activity.OnBackPressedCallback
 
 
 class MainActivity : AppCompatActivity() {
@@ -50,9 +51,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawerLayout: DrawerLayout
     private lateinit var topAppBar: MaterialToolbar
     private lateinit var navView: NavigationView
-    private val PREFS_NAME = "ReplikPrefs"
-    private val PLAY_COUNT_KEY = "playCount"
-    private val RATED_KEY = "hasRated"
+    private val prefsName = "ReplikPrefs"
+    private val playCountKey = "playCount"
+    private val ratedKey = "hasRated"
     private val adScope = CoroutineScope(Dispatchers.Main + Job())
     private lateinit var deviceId: String
 
@@ -61,23 +62,30 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onReplikPlayed() {
+        Log.d("RatingDebug", "onReplikPlayed called")
         incrementPlayCount()
     }
 
     private fun checkAndShowRatingDialog() {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val playCount = prefs.getInt(PLAY_COUNT_KEY, 0)
-        val hasRated = prefs.getBoolean(RATED_KEY, false)
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        val playCount = prefs.getInt(playCountKey, 0)
+        val hasRated = prefs.getBoolean(ratedKey, false)
+        
+        Log.d("RatingDebug", "checkAndShowRatingDialog - playCount: $playCount, hasRated: $hasRated")
         
         if (playCount >= 10 && !hasRated) {
+            Log.d("RatingDebug", "Showing rating dialog")
             showRatingDialog()
         }
     }
 
     private fun incrementPlayCount() {
-        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val currentCount = prefs.getInt(PLAY_COUNT_KEY, 0)
-        prefs.edit().putInt(PLAY_COUNT_KEY, currentCount + 1).apply()
+        val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
+        val currentCount = prefs.getInt(playCountKey, 0)
+        val newCount = currentCount + 1
+        Log.d("RatingDebug", "incrementPlayCount - currentCount: $currentCount, newCount: $newCount")
+        
+        prefs.edit().putInt(playCountKey, newCount).apply()
         
         checkAndShowRatingDialog()
     }
@@ -88,6 +96,18 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // Geri tuşu davranışını ayarla
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (supportFragmentManager.backStackEntryCount > 0) {
+                    supportFragmentManager.popBackStack()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
 
         // Reklam alanını başlangıçta gizle
         binding.adView.visibility = View.INVISIBLE
@@ -501,9 +521,9 @@ class MainActivity : AppCompatActivity() {
                 try {
                     startActivity(intent)
                     // Kullanıcı puanladı olarak işaretle
-                    getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    getSharedPreferences(prefsName, Context.MODE_PRIVATE)
                         .edit()
-                        .putBoolean(RATED_KEY, true)
+                        .putBoolean(ratedKey, true)
                         .apply()
                     dialog.dismiss()
                 } catch (e: ActivityNotFoundException) {
@@ -518,9 +538,9 @@ class MainActivity : AppCompatActivity() {
         // "Daha Sonra" butonuna basıldığında sayacı sıfırla
         btnLater.setOnClickListener {
             // Sayacı sıfırla
-            getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            getSharedPreferences(prefsName, Context.MODE_PRIVATE)
                 .edit()
-                .putInt(PLAY_COUNT_KEY, 0)
+                .putInt(playCountKey, 0)
                 .apply()
             dialog.dismiss()
         }
@@ -530,7 +550,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onPause() {
         try {
-            if (::binding.isInitialized && binding.adView != null) {
+            if (::binding.isInitialized) {
                 binding.adView.pause()
             }
         } catch (e: Exception) {
@@ -542,7 +562,7 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         try {
-            if (::binding.isInitialized && binding.adView != null) {
+            if (::binding.isInitialized) {
                 binding.adView.resume()
             }
         } catch (e: Exception) {
@@ -553,7 +573,7 @@ class MainActivity : AppCompatActivity() {
     override fun onDestroy() {
         try {
             adScope.cancel()
-            if (::binding.isInitialized && binding.adView != null) {
+            if (::binding.isInitialized) {
                 binding.adView.destroy()
             }
         } catch (e: Exception) {
@@ -620,14 +640,6 @@ class MainActivity : AppCompatActivity() {
             if (popIndex != -1) {
                 binding.viewPager.currentItem = popIndex
             }
-        }
-    }
-
-    override fun onBackPressed() {
-        if (supportFragmentManager.backStackEntryCount > 0) {
-            supportFragmentManager.popBackStack()
-        } else {
-            super.onBackPressed()
         }
     }
 }

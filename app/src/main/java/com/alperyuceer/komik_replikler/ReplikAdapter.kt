@@ -186,6 +186,9 @@ class ReplikAdapter(
                 exoPlayer?.prepare()
                 exoPlayer?.play()
 
+                // Oynatma sayacını artır
+                onReplikPlayedListener?.onReplikPlayed()
+
                 // Oynatma sayısını artır
                 val currentReplik = replikList[holder.adapterPosition]
                 Log.d("ReplikDebug", "Oynatma sayısı artırılıyor. Replik ID: ${currentReplik.id}")

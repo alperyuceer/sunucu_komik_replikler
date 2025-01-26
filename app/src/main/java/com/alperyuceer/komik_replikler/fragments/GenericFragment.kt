@@ -17,7 +17,6 @@ import com.alperyuceer.komik_replikler.R
 import com.alperyuceer.komik_replikler.api.RetrofitInstance
 import android.provider.Settings
 import kotlinx.coroutines.*
-import retrofit2.Response
 
 class GenericFragment : Fragment() {
     private lateinit var binding: FragmentGenericBinding
@@ -81,9 +80,6 @@ class GenericFragment : Fragment() {
     }
 
     private fun loadRepliks() {
-        val isKufurFiltresiActive = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
-            .getBoolean("kufur_filtresi", false)
-
         // İlk yüklemede loading göster, yenileme sırasında gösterme
         if (!binding.swipeRefreshLayout.isRefreshing) {
             binding.loadingProgressBar.visibility = View.VISIBLE
