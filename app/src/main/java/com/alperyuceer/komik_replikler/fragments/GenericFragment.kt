@@ -59,6 +59,18 @@ class GenericFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // SwipeRefreshLayout'u ayarla
+        binding.swipeRefreshLayout.setColorSchemeResources(R.color.white)
+        binding.swipeRefreshLayout.setProgressBackgroundColorSchemeResource(R.color.black)
+        
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            // Favoriler kategorisi için önbelleği temizle
+            if (category.equals("favoriler", ignoreCase = true)) {
+                replikCache.remove(category.lowercase())
+            }
+            loadRepliks()
+        }
+
         // Önbellekte varsa direkt kullan
         replikCache[category.lowercase()]?.let {
             handleResponse(it)
@@ -72,7 +84,10 @@ class GenericFragment : Fragment() {
         val isKufurFiltresiActive = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
             .getBoolean("kufur_filtresi", false)
 
-        binding.loadingProgressBar.visibility = View.VISIBLE
+        // İlk yüklemede loading göster, yenileme sırasında gösterme
+        if (!binding.swipeRefreshLayout.isRefreshing) {
+            binding.loadingProgressBar.visibility = View.VISIBLE
+        }
         binding.recyclerView.visibility = View.GONE
         binding.emptyFavoritesIcon.visibility = View.GONE
 
@@ -123,12 +138,14 @@ class GenericFragment : Fragment() {
 
                     withContext(Dispatchers.Main) {
                         binding.loadingProgressBar.visibility = View.GONE
+                        binding.swipeRefreshLayout.isRefreshing = false
                         handleResponse(replikler)
                     }
                 } else {
                     Log.e("ReplikDebug", "API Hatası: ${response.code()}")
                     withContext(Dispatchers.Main) {
                         binding.loadingProgressBar.visibility = View.GONE
+                        binding.swipeRefreshLayout.isRefreshing = false
                         binding.recyclerView.visibility = View.VISIBLE
                         Toast.makeText(context, "Replikler yüklenirken bir hata oluştu", Toast.LENGTH_SHORT).show()
                     }
@@ -137,6 +154,7 @@ class GenericFragment : Fragment() {
                 Log.e("ReplikDebug", "Bağlantı hatası: ${e.message}")
                 withContext(Dispatchers.Main) {
                     binding.loadingProgressBar.visibility = View.GONE
+                    binding.swipeRefreshLayout.isRefreshing = false
                     binding.recyclerView.visibility = View.VISIBLE
                     Toast.makeText(context, "Bağlantı hatası: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
@@ -145,9 +163,20 @@ class GenericFragment : Fragment() {
     }
 
     private fun handleResponse(replikList: List<Replik>) {
+        // Küfür filtresinin durumunu kontrol et
+        val isKufurFiltresiActive = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+            .getBoolean("kufur_filtresi", false)
+
+        // Küfür filtresini uygula
+        val filteredList = if (isKufurFiltresiActive) {
+            replikList.filter { replik -> "Küfürlü" !in replik.kategoriler }
+        } else {
+            replikList
+        }
+
         binding.apply {
             recyclerView.layoutManager = LinearLayoutManager(requireContext())
-            val adapter = ReplikAdapter(replikList, category).apply {
+            val adapter = ReplikAdapter(filteredList, category).apply {
                 // Eğer kategori favorilerse, boş durum listener'ını ekle
                 if (category == "favoriler") {
                     setOnListEmptyListener(object : ReplikAdapter.OnListEmptyListener {
@@ -169,7 +198,7 @@ class GenericFragment : Fragment() {
             recyclerView.adapter = adapter
 
             // İlk yüklemede boş durum kontrolü - animasyonsuz
-            if (category == "favoriler" && replikList.isEmpty()) {
+            if (category == "favoriler" && filteredList.isEmpty()) {
                 showEmptyStateWithoutAnimation()
             } else {
                 emptyFavoritesIcon.visibility = View.GONE

@@ -112,16 +112,27 @@ class MainActivity : AppCompatActivity() {
         // SplashActivity'den gelen kategorileri al
         val kategoriler = intent.getStringArrayListExtra("KATEGORILER")
         if (kategoriler != null) {
-            // TabLayout'u hazır kategorilerle kur
-            val adapter = TabPageAdapter(this, kategoriler)
+            // Küfür filtresinin durumunu kontrol et
+            val isKufurFiltresiActive = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                .getBoolean("kufur_filtresi", false)
+
+            // Küfürlü kategorisini filtrele
+            val filteredKategoriler = if (isKufurFiltresiActive) {
+                kategoriler.filter { it != "Küfürlü" }
+            } else {
+                kategoriler
+            }
+
+            // TabLayout'u filtrelenmiş kategorilerle kur
+            val adapter = TabPageAdapter(this, ArrayList(filteredKategoriler))
             binding.viewPager.adapter = adapter
 
             TabLayoutMediator(binding.tabLayout, binding.viewPager) { tab, position ->
-                tab.text = kategoriler[position]
+                tab.text = filteredKategoriler[position]
             }.attach()
 
             // Popüler kategorisine git
-            val popIndex = kategoriler.indexOfFirst { it.equals("Popüler", ignoreCase = true) }
+            val popIndex = filteredKategoriler.indexOfFirst { it.equals("Popüler", ignoreCase = true) }
             if (popIndex != -1) {
                 binding.viewPager.currentItem = popIndex
             }
@@ -391,12 +402,24 @@ class MainActivity : AppCompatActivity() {
             try {
                 val response = RetrofitInstance.api.getKategoriler()
                 if (response.isSuccessful) {
-                    val kategoriler = response.body()
+                    var kategoriler = response.body()
                     if (kategoriler != null) {
+                        // Küfür filtresinin durumunu kontrol et
+                        val isKufurFiltresiActive = getSharedPreferences("app_prefs", MODE_PRIVATE)
+                            .getBoolean("kufur_filtresi", false)
+
+                        // Küfürlü kategorisini filtrele
+                        if (isKufurFiltresiActive) {
+                            kategoriler = kategoriler.filter { it != "Küfürlü" }
+                        }
+
+                        // Kategorileri alfabetik olarak sırala
+                        val siraliKategoriler = kategoriler.sortedBy { it }
+
                         withContext(Dispatchers.Main) {
                             dialogBinding.categoriesRecyclerView.apply {
                                 layoutManager = GridLayoutManager(context, 2)
-                                adapter = CategoryAdapter(kategoriler) { category ->
+                                adapter = CategoryAdapter(siraliKategoriler) { category ->
                                     val index = (binding.viewPager.adapter as? TabPageAdapter)
                                         ?.getCategories()
                                         ?.indexOfFirst { it.equals(category, ignoreCase = true) } ?: -1
