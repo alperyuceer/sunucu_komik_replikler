@@ -1,0 +1,9 @@
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <external-path name="downloads" path="Download/"/>
+    <cache-path
+        name="shared_audio"
+        path="." />
+    <files-path
+        name="files"
+        path="." />
+</paths>

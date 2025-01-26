@@ -1,0 +1,20 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- Base application theme. -->
+    <style name="Theme.KomikReplikler" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">#FFF59C</item>
+        <item name="colorPrimaryVariant">@color/black</item>
+        <item name="colorOnPrimary">#FFF59C</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">#FFF59C</item> <!-- search barın altındaki line  -->
+        <item name="colorSecondaryVariant">@color/teal_200</item>
+        <item name="colorOnSecondary">#FFF59C</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:actionMenuTextColor">#FFF59C</item>
+        <!-- Font family -->
+        <item name="android:fontFamily">@font/righteous_regular</item>
+        <item name="fontFamily">@font/righteous_regular</item>
+        <!-- Customize your theme here. -->
+    </style>
+</resources>

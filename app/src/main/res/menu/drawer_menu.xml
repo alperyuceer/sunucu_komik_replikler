@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:tools="http://schemas.android.com/tools"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_kufur_filtresi"
+        app:actionLayout="@layout/menu_item_switch"
+        app:showAsAction="always"
+        tools:ignore="MenuTitle" />
+    <item
+        android:id="@+id/menu_replik_iste"
+        android:title="Replik İste"
+        android:icon="@drawable/ic_mail"
+        app:actionLayout="@layout/menu_item_replik_iste"/>
+    <item
+        android:id="@+id/menu_puanla"
+        android:title="Uygulamayı Puanla"
+        android:icon="@drawable/ic_star"
+        app:actionLayout="@layout/menu_item_puanla"/>
+    <item
+        android:id="@+id/menu_paylas"
+        android:title="Uygulamayı Paylaş"
+        android:icon="@drawable/ic_share"
+        app:actionLayout="@layout/menu_item_paylas"/>
+    <item
+        android:id="@+id/menu_diger_uygulama"
+        android:title="Diğer Uygulamalarımız"
+        android:icon="@drawable/ic_app"
+        app:actionLayout="@layout/menu_item_diger"/>
+    <item
+        android:id="@+id/menu_hakkinda"
+        android:title="Hakkında"
+        android:icon="@drawable/ic_info"
+        app:actionLayout="@layout/menu_item_hakkinda"/>
+</menu> 
