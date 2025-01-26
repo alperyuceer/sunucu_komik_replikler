@@ -228,7 +228,10 @@ class ReplikAdapter(
             currentReplik.favorimi = newFavoriteState
             
             // API'ye bildir
-            (holder.itemView.context as? MainActivity)?.updateFavorite(currentReplik, newFavoriteState)
+            when (val context = holder.itemView.context) {
+                is MainActivity -> context.updateFavorite(currentReplik, newFavoriteState)
+                is SearchActivity -> context.updateFavorite(currentReplik, newFavoriteState)
+            }
 
             if (category == "favoriler" && !newFavoriteState) {
                 val mutableList = replikList.toMutableList()

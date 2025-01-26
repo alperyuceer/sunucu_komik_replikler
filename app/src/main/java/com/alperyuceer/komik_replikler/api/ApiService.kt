@@ -32,6 +32,9 @@ interface ApiService {
 
     @POST("api/replik/{id}/increment-play-count")
     suspend fun incrementPlayCount(@Path("id") replikId: String): Response<Unit>
+
+    @GET("api/replikler/search")
+    suspend fun searchReplikler(@Query("q") query: String): Response<List<Replik>>
 }
 
 data class FavoriteRequest(
