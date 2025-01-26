@@ -264,43 +264,64 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.Main).launch {
             delay(1000) // UI'nin hazır olması için kısa bir gecikme
             try {
-                MobileAds.initialize(this@MainActivity) { initializationStatus ->
+                MobileAds.initialize(this@MainActivity) { _ ->
                     // Reklam SDK'sı başlatıldıktan sonra reklam yükle
-                    val adRequest = AdRequest.Builder().build()
-                    
-                    binding.adView.adListener = object : AdListener() {
-                        override fun onAdLoaded() {
-                            super.onAdLoaded()
-                            // Reklam başarıyla yüklendiğinde göster
-                            binding.adView.visibility = View.VISIBLE
-                            // TabLayout'u reklamın üstüne taşı
-                            val params = binding.tabLayout.layoutParams as RelativeLayout.LayoutParams
-                            params.addRule(RelativeLayout.ABOVE, R.id.adView)
-                            params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                            binding.tabLayout.layoutParams = params
-                        }
-                        
-                        override fun onAdFailedToLoad(error: LoadAdError) {
-                            super.onAdFailedToLoad(error)
-                            // Reklam yüklenemezse tamamen gizle
-                            binding.adView.visibility = View.GONE
-                            // TabLayout'u en alta sabitle
-                            val params = binding.tabLayout.layoutParams as RelativeLayout.LayoutParams
-                            params.removeRule(RelativeLayout.ABOVE)
-                            params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
-                            binding.tabLayout.layoutParams = params
-                            Log.e("AdError", "Ad failed to load: ${error.message}")
-                        }
-                    }
-                    
-                    // Reklam yüklemeyi başlat
-                    binding.adView.loadAd(adRequest)
+                    loadAd()
                 }
             } catch (e: Exception) {
-                Log.e("AdError", "Ad initialization failed", e)
-                binding.adView.visibility = View.GONE
+                Log.e("AdMob", "Ad initialization error: ${e.message}")
             }
         }
+    }
+
+    private var adRetryCount = 0
+    private val maxAdRetry = 3
+    
+    private fun loadAd() {
+        if (adRetryCount >= maxAdRetry) {
+            Log.w("AdMob", "Maximum ad retry count reached")
+            return
+        }
+        
+        val adRequest = AdRequest.Builder().build()
+        binding.adView.adListener = object : AdListener() {
+            override fun onAdLoaded() {
+                super.onAdLoaded()
+                adRetryCount = 0 // Başarılı yüklemede sayacı sıfırla
+                // Reklam başarıyla yüklendiğinde göster
+                binding.adView.visibility = View.VISIBLE
+                // TabLayout'u reklamın üstüne taşı
+                val params = binding.tabLayout.layoutParams as RelativeLayout.LayoutParams
+                params.addRule(RelativeLayout.ABOVE, R.id.adView)
+                params.removeRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                binding.tabLayout.layoutParams = params
+            }
+            
+            override fun onAdFailedToLoad(error: LoadAdError) {
+                super.onAdFailedToLoad(error)
+                Log.e("AdMob", "Ad failed to load: ${error.message}")
+                
+                // Reklam yüklenemezse tamamen gizle
+                binding.adView.visibility = View.GONE
+                // TabLayout'u en alta sabitle
+                val params = binding.tabLayout.layoutParams as RelativeLayout.LayoutParams
+                params.removeRule(RelativeLayout.ABOVE)
+                params.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM)
+                binding.tabLayout.layoutParams = params
+                
+                // Belirli bir süre sonra tekrar dene
+                adRetryCount++
+                if (adRetryCount < maxAdRetry) {
+                    adScope.launch {
+                        delay(5000) // 5 saniye bekle
+                        loadAd() // Tekrar dene
+                    }
+                }
+            }
+        }
+        
+        // Reklam yüklemeyi başlat
+        binding.adView.loadAd(adRequest)
     }
 
     private fun checkAndRequestPermissions() {

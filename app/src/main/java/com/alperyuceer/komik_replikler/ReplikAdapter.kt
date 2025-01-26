@@ -2,7 +2,6 @@ package com.alperyuceer.komik_replikler
 
 import android.content.Context
 import android.content.Intent
-import android.net.Uri
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
@@ -11,9 +10,9 @@ import androidx.core.content.FileProvider
 import androidx.recyclerview.widget.RecyclerView
 import com.alperyuceer.komik_replikler.api.RetrofitInstance
 import com.alperyuceer.komik_replikler.databinding.RecyclerRowBinding
-import com.google.android.exoplayer2.ExoPlayer
-import com.google.android.exoplayer2.MediaItem
-import com.google.android.exoplayer2.Player
+import androidx.media3.common.MediaItem
+import androidx.media3.common.Player
+import androidx.media3.exoplayer.ExoPlayer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -111,16 +110,16 @@ class ReplikAdapter(
     }
 
     override fun onBindViewHolder(holder: ReplikHolder, position: Int) {
-        val currentReplik = replikList[position]
+        val replik = replikList[position]
 
-        holder.binding.replikView.text = currentReplik.baslik ?: "İsimsiz Replik"
+        holder.binding.replikView.text = replik.baslik ?: "İsimsiz Replik"
         
         holder.binding.favoriyeEkleButonu.setIconResource(
-            if (currentReplik.favorimi) R.drawable.ic_favorite_light else R.drawable.ic_favorite_border
+            if (replik.favorimi) R.drawable.ic_favorite_light else R.drawable.ic_favorite_border
         )
 
         // Çalan repliği vurgula
-        if (currentReplik.baslik == currentlyPlayingReplikName) {
+        if (replik.baslik == currentlyPlayingReplikName) {
             holder.binding.cardView.setCardBackgroundColor(holder.itemView.context.getColor(R.color.playing_background))
         } else {
             holder.binding.cardView.setCardBackgroundColor(holder.itemView.context.getColor(R.color.card_background))
@@ -137,7 +136,7 @@ class ReplikAdapter(
                 Log.d("ReplikDebug", "Ses çalınıyor: $sesDosyasi")
                 
                 // Eğer aynı replik çalıyorsa durdur
-                if (currentlyPlayingReplikName == replikList[holder.adapterPosition].baslik) {
+                if (currentlyPlayingReplikName == replikList[holder.bindingAdapterPosition].baslik) {
                     exoPlayer?.stop()
                     exoPlayer?.release()
                     exoPlayer = null
@@ -167,13 +166,13 @@ class ReplikAdapter(
                 }
 
                 // Yeni çalan repliği kaydet ve arka planını değiştir
-                currentlyPlayingReplikName = replikList[holder.adapterPosition].baslik
+                currentlyPlayingReplikName = replikList[holder.bindingAdapterPosition].baslik
                 holder.binding.cardView.setCardBackgroundColor(context.getColor(R.color.playing_background))
 
                 // Player listener'ları ayarla
                 exoPlayer?.addListener(object : Player.Listener {
-                    override fun onPlaybackStateChanged(state: Int) {
-                        if (state == Player.STATE_ENDED) {
+                    override fun onPlaybackStateChanged(playbackState: Int) {
+                        if (playbackState == Player.STATE_ENDED) {
                             currentlyPlayingReplikName = null
                             holder.binding.cardView.setCardBackgroundColor(context.getColor(R.color.card_background))
                             exoPlayer?.release()
@@ -190,11 +189,11 @@ class ReplikAdapter(
                 onReplikPlayedListener?.onReplikPlayed()
 
                 // Oynatma sayısını artır
-                val currentReplik = replikList[holder.adapterPosition]
-                Log.d("ReplikDebug", "Oynatma sayısı artırılıyor. Replik ID: ${currentReplik.id}")
+                val playingReplik = replikList[holder.bindingAdapterPosition]
+                Log.d("ReplikDebug", "Oynatma sayısı artırılıyor. Replik ID: ${playingReplik.id}")
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
-                        val response = RetrofitInstance.api.incrementPlayCount(currentReplik.id)
+                        val response = RetrofitInstance.api.incrementPlayCount(playingReplik.id)
                         if (!response.isSuccessful) {
                             Log.e("ReplikDebug", "Oynatma sayısı güncellenemedi: ${response.code()}")
                         } else {
@@ -227,13 +226,13 @@ class ReplikAdapter(
 
         // Favorilere ekleme butonuna tıklama
         holder.binding.favoriyeEkleButonu.setOnClickListener {
-            val newFavoriteState = !currentReplik.favorimi
-            currentReplik.favorimi = newFavoriteState
+            val newFavoriteState = !replik.favorimi
+            replik.favorimi = newFavoriteState
             
             // API'ye bildir
             when (val context = holder.itemView.context) {
-                is MainActivity -> context.updateFavorite(currentReplik, newFavoriteState)
-                is SearchActivity -> context.updateFavorite(currentReplik, newFavoriteState)
+                is MainActivity -> context.updateFavorite(replik, newFavoriteState)
+                is SearchActivity -> context.updateFavorite(replik, newFavoriteState)
             }
 
             if (category == "favoriler" && !newFavoriteState) {
