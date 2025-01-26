@@ -14,14 +14,14 @@ import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.content.Context
 import androidx.appcompat.app.AlertDialog
-import android.net.Proxy
-import android.os.Build
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import android.provider.Settings
 
 class SplashActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySplashBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         binding = ActivitySplashBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -65,13 +65,11 @@ class SplashActivity : AppCompatActivity() {
     }
 
     private fun isProxyEnabled(): Boolean {
-        // Android 4.0 ve üzeri için proxy ayarlarını kontrol et
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH) {
-            val proxyHost = System.getProperty("http.proxyHost")
-            val proxyPort = System.getProperty("http.proxyPort")
-            if (!proxyHost.isNullOrEmpty() && !proxyPort.isNullOrEmpty()) {
-                return true
-            }
+        // Proxy ayarlarını kontrol et
+        val proxyHost = System.getProperty("http.proxyHost")
+        val proxyPort = System.getProperty("http.proxyPort")
+        if (!proxyHost.isNullOrEmpty() && !proxyPort.isNullOrEmpty()) {
+            return true
         }
 
         // Global proxy ayarlarını kontrol et
@@ -86,11 +84,9 @@ class SplashActivity : AppCompatActivity() {
 
         // VPN bağlantısını kontrol et
         val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            cm.getNetworkCapabilities(cm.activeNetwork)?.let { capabilities ->
-                if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
-                    return true
-                }
+        cm.getNetworkCapabilities(cm.activeNetwork)?.let { capabilities ->
+            if (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_VPN)) {
+                return true
             }
         }
 
@@ -117,19 +113,11 @@ class SplashActivity : AppCompatActivity() {
 
     private fun isInternetAvailable(): Boolean {
         val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        val network = connectivityManager.activeNetwork ?: return false
+        val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
         
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            val network = connectivityManager.activeNetwork ?: return false
-            val capabilities = connectivityManager.getNetworkCapabilities(network) ?: return false
-            
-            return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                   capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        } else {
-            @Suppress("DEPRECATION")
-            val networkInfo = connectivityManager.activeNetworkInfo
-            @Suppress("DEPRECATION")
-            return networkInfo != null && networkInfo.isConnected
-        }
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+               capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 
     private fun showNoInternetDialog() {

@@ -13,8 +13,8 @@ android {
         applicationId "com.alperyuceer.komik_replikler"
         minSdk 24
         targetSdk 34
-        versionCode 8
-        versionName "1.0.6"
+        versionCode 9
+        versionName "1.0.7-beta1"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -66,4 +66,6 @@ dependencies {
 
     // Gson
     implementation 'com.google.code.gson:gson:2.10.1'
+
+    implementation 'androidx.core:core-splashscreen:1.0.1'
 }

@@ -15,13 +15,21 @@ import com.alperyuceer.komik_replikler.ReplikAdapter
 import com.alperyuceer.komik_replikler.databinding.FragmentGenericBinding
 import com.alperyuceer.komik_replikler.R
 import com.alperyuceer.komik_replikler.api.RetrofitInstance
-import android.provider.Settings
 import kotlinx.coroutines.*
+import java.util.UUID
 
 class GenericFragment : Fragment() {
     private lateinit var binding: FragmentGenericBinding
     private lateinit var category: String
     private val coroutineScope = CoroutineScope(Dispatchers.Main + Job())
+    private val deviceId: String by lazy {
+        val prefs = requireActivity().getSharedPreferences("app_prefs", Context.MODE_PRIVATE)
+        prefs.getString("device_uuid", null) ?: run {
+            val newUuid = UUID.randomUUID().toString()
+            prefs.edit().putString("device_uuid", newUuid).apply()
+            newUuid
+        }
+    }
 
     companion object {
         // Kategori bazlı önbellek
@@ -89,8 +97,6 @@ class GenericFragment : Fragment() {
 
         coroutineScope.launch {
             try {
-                val deviceId = Settings.Secure.getString(requireContext().contentResolver, Settings.Secure.ANDROID_ID)
-                
                 // API'den replikleri al
                 val response = when (category.lowercase()) {
                     "favoriler" -> {

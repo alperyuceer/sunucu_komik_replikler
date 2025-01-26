@@ -2,8 +2,6 @@ package com.alperyuceer.komik_replikler
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.provider.Settings
-import android.view.View
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -16,10 +14,20 @@ import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import android.view.View
+import java.util.UUID
 
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
     private var searchJob: Job? = null
+    private val deviceId: String by lazy {
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        prefs.getString("device_uuid", null) ?: run {
+            val newUuid = UUID.randomUUID().toString()
+            prefs.edit().putString("device_uuid", newUuid).apply()
+            newUuid
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -51,7 +59,7 @@ class SearchActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        onBackPressed()
+        onBackPressedDispatcher.onBackPressed()
         return true
     }
 
@@ -71,7 +79,6 @@ class SearchActivity : AppCompatActivity() {
                 var replikler = response.body() ?: emptyList()
 
                 // Favorileri kontrol et
-                val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
                 val favorilerResponse = RetrofitInstance.api.getFavorites(deviceId)
                 if (favorilerResponse.isSuccessful) {
                     val favoriler = favorilerResponse.body() ?: emptyList()
@@ -116,7 +123,6 @@ class SearchActivity : AppCompatActivity() {
     }
 
     fun updateFavorite(replik: Replik, isFavorite: Boolean) {
-        val deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val favoriteRequest = FavoriteRequest(deviceId, replik.id)

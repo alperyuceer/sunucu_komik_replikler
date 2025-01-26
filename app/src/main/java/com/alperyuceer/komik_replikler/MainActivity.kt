@@ -43,6 +43,7 @@ import com.alperyuceer.komik_replikler.api.RetrofitInstance
 import android.provider.Settings
 import com.alperyuceer.komik_replikler.api.FavoriteRequest
 import androidx.activity.OnBackPressedCallback
+import java.util.UUID
 
 
 class MainActivity : AppCompatActivity() {
@@ -55,7 +56,14 @@ class MainActivity : AppCompatActivity() {
     private val playCountKey = "playCount"
     private val ratedKey = "hasRated"
     private val adScope = CoroutineScope(Dispatchers.Main + Job())
-    private lateinit var deviceId: String
+    private val deviceId: String by lazy {
+        val prefs = getSharedPreferences("app_prefs", MODE_PRIVATE)
+        prefs.getString("device_uuid", null) ?: run {
+            val newUuid = UUID.randomUUID().toString()
+            prefs.edit().putString("device_uuid", newUuid).apply()
+            newUuid
+        }
+    }
 
     companion object {
         private const val STORAGE_PERMISSION_CODE = 100
@@ -90,7 +98,6 @@ class MainActivity : AppCompatActivity() {
         checkAndShowRatingDialog()
     }
 
-    @SuppressLint("SetTextI18n", "HardwareIds")
     override fun onCreate(savedInstanceState: Bundle?) {
         window.requestFeature(Window.FEATURE_NO_TITLE)
         super.onCreate(savedInstanceState)
@@ -126,9 +133,6 @@ class MainActivity : AppCompatActivity() {
         // Set up TopAppBar
         setSupportActionBar(topAppBar)
         
-        // Device ID'yi al
-        deviceId = Settings.Secure.getString(contentResolver, Settings.Secure.ANDROID_ID)
-
         // SplashActivity'den gelen kategorileri al
         val kategoriler = intent.getStringArrayListExtra("KATEGORILER")
         if (kategoriler != null) {
