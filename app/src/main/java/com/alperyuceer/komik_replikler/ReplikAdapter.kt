@@ -133,8 +133,7 @@ class ReplikAdapter(
 
             try {
                 val context = holder.itemView.context
-                Log.d("ReplikDebug", "Ses çalınıyor: $sesDosyasi")
-                
+
                 // Eğer aynı replik çalıyorsa durdur
                 if (currentlyPlayingReplikName == replikList[holder.bindingAdapterPosition].baslik) {
                     exoPlayer?.stop()
@@ -153,7 +152,6 @@ class ReplikAdapter(
                 
                 // Ses URL'ini oluştur ve MediaItem'a dönüştür
                 val mediaUrl = "$BASE_URL/audio/$sesDosyasi"
-                Log.d("ReplikDebug", "Ses URL: $mediaUrl")
                 val mediaItem = MediaItem.fromUri(mediaUrl)
                 exoPlayer?.setMediaItem(mediaItem)
                 
@@ -190,23 +188,17 @@ class ReplikAdapter(
 
                 // Oynatma sayısını artır
                 val playingReplik = replikList[holder.bindingAdapterPosition]
-                Log.d("ReplikDebug", "Oynatma sayısı artırılıyor. Replik ID: ${playingReplik.id}")
                 CoroutineScope(Dispatchers.IO).launch {
                     try {
                         val response = RetrofitInstance.api.incrementPlayCount(playingReplik.id)
-                        if (!response.isSuccessful) {
-                            Log.e("ReplikDebug", "Oynatma sayısı güncellenemedi: ${response.code()}")
-                        } else {
-                            Log.d("ReplikDebug", "Oynatma sayısı başarıyla güncellendi")
-                        }
                     } catch (e: Exception) {
-                        Log.e("ReplikDebug", "Oynatma sayısı güncelleme hatası: ${e.message}")
+                        Log.e("ReplikDebug", "Oynatma güncelleme hatası")
                     }
                 }
                 
             } catch (e: Exception) {
-                Log.e("ReplikDebug", "Ses oynatma hatası: ${e.message}", e)
-                Toast.makeText(holder.itemView.context, "Ses dosyası oynatılamadı: ${e.message}", Toast.LENGTH_SHORT).show()
+                Log.e("ReplikDebug", "Ses oynatma hatası", e)
+                Toast.makeText(holder.itemView.context, "Ses dosyası oynatılamadı", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -253,6 +245,6 @@ class ReplikAdapter(
     }
 
     companion object {
-        private const val BASE_URL = "http://138.68.111.170:3000"
+        private const val BASE_URL = "http://komikreplikler.xyz"
     }
 }

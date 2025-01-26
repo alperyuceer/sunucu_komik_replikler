@@ -16,6 +16,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import android.view.View
 import java.util.UUID
+import android.widget.Toast
 
 class SearchActivity : AppCompatActivity() {
     private lateinit var binding: ActivitySearchBinding
@@ -118,6 +119,7 @@ class SearchActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 binding.searchRecyclerView.visibility = View.GONE
                 binding.emptySearchIcon.visibility = View.VISIBLE
+                Toast.makeText(this@SearchActivity, "İnternet bağlantısı hatası", Toast.LENGTH_SHORT).show()
             }
         }
     }

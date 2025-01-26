@@ -31,6 +31,42 @@
     @com.google.gson.annotations.SerializedName <fields>;
 }
 
+# Retrofit kuralları
+-keepattributes Signature
+-keepattributes Exceptions
+-keep class retrofit2.** { *; }
+-keepclasseswithmembers class * {
+    @retrofit2.http.* <methods>;
+}
+-keepclassmembers,allowshrinking,allowobfuscation interface * {
+    @retrofit2.http.* <methods>;
+}
+
+# OkHttp kuralları
+-dontwarn okhttp3.**
+-dontwarn okio.**
+-dontwarn javax.annotation.**
+-keepnames class okhttp3.internal.publicsuffix.PublicSuffixDatabase
+-dontwarn org.codehaus.mojo.animal_sniffer.*
+-dontwarn okhttp3.internal.platform.ConscryptPlatform
+-dontwarn org.conscrypt.ConscryptHostnameVerifier
+
+# Gson kuralları
+-keepattributes Signature
+-keepattributes *Annotation*
+-dontwarn sun.misc.**
+-keep class com.google.gson.** { *; }
+-keep class * implements com.google.gson.TypeAdapterFactory
+-keep class * implements com.google.gson.JsonSerializer
+-keep class * implements com.google.gson.JsonDeserializer
+
+# Coroutines kuralları
+-keepnames class kotlinx.coroutines.internal.MainDispatcherFactory {}
+-keepnames class kotlinx.coroutines.CoroutineExceptionHandler {}
+-keepclassmembernames class kotlinx.** {
+    volatile <fields>;
+}
+
 # AdMob için gerekli kurallar
 -keep public class com.google.android.gms.ads.** {
     public *;
@@ -38,30 +74,54 @@
 -keep public class com.google.ads.** {
     public *;
 }
+-keep class com.google.android.gms.internal.ads.** { *; }
+-dontwarn com.google.android.gms.**
+-dontwarn com.google.android.gms.ads.**
 
 # MediaPlayer için gerekli kurallar
 -keep class * extends android.media.MediaPlayer { *; }
+-keep class android.media.** { *; }
+-dontwarn android.media.**
+
+# ExoPlayer kuralları
+-keepclassmembers class com.google.android.exoplayer2.** { *; }
+-keep class com.google.android.exoplayer2.** { *; }
+-dontwarn com.google.android.exoplayer2.**
 
 # Genel Android kuralları
 -keepclassmembers class * implements android.os.Parcelable {
     public static final ** CREATOR;
 }
-
-# Enum'lar için gerekli kurallar
 -keepclassmembers enum * {
     public static **[] values();
     public static ** valueOf(java.lang.String);
 }
 
 # Uygulama özel sınıfları koru
--keep class com.alperyuceer.komik_replikler.AudioEncryption { *; }
--keep class com.alperyuceer.komik_replikler.KategoriConverter { *; }
+-keep class com.alperyuceer.komik_replikler.** { *; }
+-keep class com.alperyuceer.komik_replikler.api.** { *; }
+-keep class com.alperyuceer.komik_replikler.models.** { *; }
 
 # Hata ayıklama için kaynak dosya adlarını ve satır numaralarını koru
 -keepattributes SourceFile,LineNumberTable
-
-# Crash raporlama için stack trace'leri koru
 -renamesourcefileattribute SourceFile
+
+# Kotlin
+-keep class kotlin.** { *; }
+-keep class kotlin.Metadata { *; }
+-dontwarn kotlin.**
+-keepclassmembers class **$WhenMappings {
+    <fields>;
+}
+-keepclassmembers class kotlin.Metadata {
+    public <methods>;
+}
+
+# ViewBinding
+-keep class * implements androidx.viewbinding.ViewBinding {
+    public static *** bind(android.view.View);
+    public static *** inflate(android.view.LayoutInflater);
+}
 
 # LoudnessCodecController için ek kurallar
 -dontwarn android.media.LoudnessCodecController
@@ -71,12 +131,6 @@
 -keepclassmembers class com.google.android.gms.internal.ads.** {
     *;
 }
--keep class com.google.android.gms.internal.ads.** { *; }
-
-# Tüm uyarıları yoksay
--dontwarn com.google.android.gms.**
--dontwarn com.google.android.gms.ads.**
 
 # MediaPlayer için ek kurallar
 -keep class android.media.** { *; }
--dontwarn android.media.**

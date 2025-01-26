@@ -70,7 +70,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun onReplikPlayed() {
-        Log.d("RatingDebug", "onReplikPlayed called")
         incrementPlayCount()
     }
 
@@ -78,11 +77,8 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val playCount = prefs.getInt(playCountKey, 0)
         val hasRated = prefs.getBoolean(ratedKey, false)
-        
-        Log.d("RatingDebug", "checkAndShowRatingDialog - playCount: $playCount, hasRated: $hasRated")
-        
+
         if (playCount >= 10 && !hasRated) {
-            Log.d("RatingDebug", "Showing rating dialog")
             showRatingDialog()
         }
     }
@@ -91,8 +87,7 @@ class MainActivity : AppCompatActivity() {
         val prefs = getSharedPreferences(prefsName, Context.MODE_PRIVATE)
         val currentCount = prefs.getInt(playCountKey, 0)
         val newCount = currentCount + 1
-        Log.d("RatingDebug", "incrementPlayCount - currentCount: $currentCount, newCount: $newCount")
-        
+
         prefs.edit().putInt(playCountKey, newCount).apply()
         
         checkAndShowRatingDialog()
@@ -429,7 +424,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Kategoriler yüklenirken hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Kategoriler yüklenirken hata oluştu", Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -485,7 +480,7 @@ class MainActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@MainActivity, "Kategoriler yüklenirken hata oluştu: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@MainActivity, "Kategoriler yüklenirken hata oluştu", Toast.LENGTH_SHORT).show()
                     dialog.dismiss()
                 }
             }
@@ -612,8 +607,7 @@ class MainActivity : AppCompatActivity() {
         CoroutineScope(Dispatchers.IO).launch {
             try {
                 val request = FavoriteRequest(deviceId, replik.id)
-                Log.d("FavoriteDebug", "Request: deviceId=${request.deviceId}, replikId=${request.replikId}")
-                
+
                 val response = if (isFavorite) {
                     RetrofitInstance.api.addToFavorites(request)
                 } else {
@@ -621,23 +615,21 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 if (!response.isSuccessful) {
-                    Log.e("FavoriteDebug", "Error Response: ${response.code()} - ${response.errorBody()?.string()}")
                     withContext(Dispatchers.Main) {
                         Toast.makeText(
                             this@MainActivity,
-                            "Favori işlemi başarısız: ${response.code()} - ${response.message()}",
+                            "Favori işlemi başarısız oldu",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
                 } else {
-                    Log.d("FavoriteDebug", "Success: ${response.body()}")
+                    Log.d("FavoriteDebug", "Success")
                 }
             } catch (e: Exception) {
-                Log.e("FavoriteDebug", "Exception: ${e.message}", e)
                 withContext(Dispatchers.Main) {
                     Toast.makeText(
                         this@MainActivity,
-                        "Favori işlemi sırasında hata: ${e.message}",
+                        "Favori işlemi sırasında hata oluştu",
                         Toast.LENGTH_SHORT
                     ).show()
                 }

@@ -52,7 +52,6 @@ class GenericFragment : Fragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         category = arguments?.getString("category") ?: "general"
-        Log.d("GenericFragment", "Category: $category")
     }
 
     override fun onCreateView(
@@ -100,12 +99,10 @@ class GenericFragment : Fragment() {
                 // API'den replikleri al
                 val response = when (category.lowercase()) {
                     "favoriler" -> {
-                        Log.d("ReplikDebug", "Favoriler yükleniyor...")
                         RetrofitInstance.api.getFavorites(deviceId)
                     }
                     else -> {
                         val formattedCategory = category.replaceFirstChar { it.uppercase() }
-                        Log.d("ReplikDebug", "$formattedCategory kategorisi yükleniyor...")
                         RetrofitInstance.api.getRepliklerByKategori(formattedCategory)
                     }
                 }
@@ -115,7 +112,6 @@ class GenericFragment : Fragment() {
                     
                     if (category.lowercase() == "favoriler") {
                         if (replikler.isEmpty()) {
-                            Log.d("ReplikDebug", "Favoriler listesi boş")
                         } else {
                             replikler = replikler.map { it.copy(favorimi = true) }
                         }
@@ -127,11 +123,8 @@ class GenericFragment : Fragment() {
                             replikler = replikler.map { replik ->
                                 replik.copy(favorimi = favoriler.any { it.id == replik.id })
                             }
-                            Log.d("ReplikDebug", "${replikler.count { it.favorimi }} adet favori replik bulundu")
                         }
                     }
-
-                    Log.d("ReplikDebug", "${replikler.size} adet replik yüklendi")
 
                     // Favoriler hariç diğer kategorileri önbellekle
                     if (category.lowercase() != "favoriler") {
@@ -144,7 +137,6 @@ class GenericFragment : Fragment() {
                         handleResponse(replikler)
                     }
                 } else {
-                    Log.e("ReplikDebug", "API Hatası: ${response.code()}")
                     withContext(Dispatchers.Main) {
                         binding.loadingProgressBar.visibility = View.GONE
                         binding.swipeRefreshLayout.isRefreshing = false
@@ -153,12 +145,11 @@ class GenericFragment : Fragment() {
                     }
                 }
             } catch (e: Exception) {
-                Log.e("ReplikDebug", "Bağlantı hatası: ${e.message}")
                 withContext(Dispatchers.Main) {
                     binding.loadingProgressBar.visibility = View.GONE
                     binding.swipeRefreshLayout.isRefreshing = false
                     binding.recyclerView.visibility = View.VISIBLE
-                    Toast.makeText(context, "Bağlantı hatası: ${e.message}", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(context, "İnternet bağlantısı hatası", Toast.LENGTH_SHORT).show()
                 }
             }
         }

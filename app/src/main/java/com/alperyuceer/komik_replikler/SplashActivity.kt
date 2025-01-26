@@ -57,7 +57,7 @@ class SplashActivity : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(this@SplashActivity, "Bağlantı hatası: ${e.message}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@SplashActivity, "İnternet bağlantısı hatası", Toast.LENGTH_LONG).show()
                     finish()
                 }
             }
