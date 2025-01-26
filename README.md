@@ -12,8 +12,7 @@ Bu uygulama, popüler dizi ve filmlerden komik replikleri kategorize eden, oynat
 - Özel font kullanımı
 
 ## 🏗️ Proje Yapısı
-AAAAA
-
+alper
 ### 📂 Temel Dosyalar ve Görevleri
 
 #### Veri Modeli ve Veritabanı
